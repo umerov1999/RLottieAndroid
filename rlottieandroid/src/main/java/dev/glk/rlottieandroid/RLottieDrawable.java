@@ -1,6 +1,5 @@
 package dev.glk.rlottieandroid;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -10,34 +9,41 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class RLottieDrawable extends Drawable {
+import java.util.concurrent.atomic.AtomicInteger;
 
-    private final Paint bitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
-    private final long ptr;
+public abstract class RLottieDrawable extends Drawable {
+
+    protected static final boolean DEBUG_LOG = true;
+
+    @NonNull
+    protected final Paint bitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    protected final AtomicInteger currentFrame = new AtomicInteger(0);
+    protected final long ptr;
+    protected final int frameRate;
+    protected final int frameTimeDiff;
+    protected final int framesCount;
+    protected long lastRenderTime;
+
     private final int sourceWidth;
     private final int sourceHeight;
-    private final int frameRate;
-    private final int framesCount;
+    private boolean isStatic;
 
-    private int currFrame;
-    private Bitmap currBitmap;
-
-    public RLottieDrawable(@NonNull String lottieJson) {
-        ptr = RLottieNative.nativeCreateAnimation(lottieJson);
+    RLottieDrawable(@NonNull String lottieJson) {
+        ptr = RLottie.nativeCreateAnimation(lottieJson);
         if (ptr == 0) {
             sourceWidth = 0;
             sourceHeight = 0;
             frameRate = 0;
+            frameTimeDiff = 0;
             framesCount = 0;
             return;
         }
 
-        sourceWidth = RLottieNative.nativeGetWidth(ptr);
-        sourceHeight = RLottieNative.nativeGetHeight(ptr);
-        frameRate = RLottieNative.nativeGetFrameRate(ptr);
-        framesCount = RLottieNative.nativeGetFramesCount(ptr);
-
-        currBitmap = Bitmap.createBitmap(sourceWidth, sourceHeight, Bitmap.Config.ARGB_8888);
+        sourceWidth = RLottie.nativeGetWidth(ptr);
+        sourceHeight = RLottie.nativeGetHeight(ptr);
+        frameRate = RLottie.nativeGetFrameRate(ptr);
+        frameTimeDiff = 16;
+        framesCount = RLottie.nativeGetFramesCount(ptr);
     }
 
     @Override
@@ -48,29 +54,6 @@ public class RLottieDrawable extends Drawable {
     @Override
     public int getIntrinsicHeight() {
         return sourceHeight;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        if (ptr != 0) {
-            try {
-                RLottieNative.nativeDestroyAnimation(ptr);
-            } catch (Throwable throwable) {
-                // ignore
-            }
-        }
-        super.finalize();
-    }
-
-    @Override
-    public void draw(@NonNull Canvas canvas) {
-        RLottieNative.nativeRenderFrame(ptr, currFrame, currBitmap);
-        canvas.drawBitmap(currBitmap, 0, 0, bitmapPaint);
-        ++currFrame;
-        if (currFrame > framesCount) {
-            currFrame = 0;
-        }
-        invalidateSelf();
     }
 
     @Override
@@ -88,8 +71,46 @@ public class RLottieDrawable extends Drawable {
         return PixelFormat.TRANSPARENT;
     }
 
+    @Override
+    public void draw(@NonNull Canvas canvas) {
+        renderFrame(canvas);
+        if (!isStatic) {
+            invalidateSelf();
+        }
+    }
 
     public boolean isValid() {
         return ptr != 0;
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
+        invalidateSelf();
+    }
+
+    public void setCurrentFrame(int currentFrame) {
+        if (currentFrame < 0 || framesCount <= currentFrame) {
+            return;
+        }
+        this.currentFrame.set(currentFrame);
+        invalidateSelf();
+    }
+
+    protected abstract void renderFrame(@NonNull Canvas canvas);
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (ptr != 0) {
+            try {
+                RLottie.nativeDestroyAnimation(ptr);
+            } catch (Throwable throwable) {
+                // ignore
+            }
+        }
+        super.finalize();
     }
 }

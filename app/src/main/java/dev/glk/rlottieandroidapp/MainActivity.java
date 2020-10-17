@@ -6,16 +6,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import dev.glk.rlottieandroid.RLottie;
 import dev.glk.rlottieandroid.RLottieDrawable;
-import dev.glk.rlottieandroid.RLottieNative;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.main_image);
         String json = readAsset("a_mountain.json");
-        RLottieDrawable drawable = new RLottieDrawable(json);
+        RLottieDrawable drawable = RLottie.fromJson(json);
+//        drawable.setStatic(true);
+//        drawable.setCurrentFrame(70);
         imageView.setImageDrawable(drawable);
     }
 

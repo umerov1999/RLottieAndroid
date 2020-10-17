@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
-public class RLottieNative {
+public class RLottie {
 
     static final boolean isReady;
 
@@ -19,6 +19,9 @@ public class RLottieNative {
         isReady = ready;
     }
 
+    public static RLottieDrawable fromJson(String json) {
+        return new SyncRLottieDrawable(json);
+    }
 
     static native long nativeCreateAnimation(@NonNull String json);
 
