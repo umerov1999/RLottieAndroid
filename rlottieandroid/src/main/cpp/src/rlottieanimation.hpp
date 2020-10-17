@@ -6,9 +6,9 @@
 using namespace rlottie;
 using namespace std;
 
-class LottieAnimation {
+class RLottieAnimation {
 public:
-    explicit LottieAnimation(const string& json);
+    explicit RLottieAnimation(const string& json);
 
     bool isValid();
 

@@ -16,7 +16,7 @@ include_directories(
 
 set(SOURCES
         src/utils.cpp
-        src/lottieanimation.cpp
+        rlottieanimation.cpp
         src/jni.cpp)
 
 list(APPEND LIBS jnigraphics)

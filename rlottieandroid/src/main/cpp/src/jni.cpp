@@ -2,11 +2,11 @@
 #include <jni.h>
 #include <utils.hpp>
 
-#include "lottieanimation.hpp"
+#include "rlottieanimation.hpp"
 
 static jlong createAnimation(JNIEnv* env, jobject obj, jstring jsonString) {
     auto json = jni::toString(env, jsonString);
-    auto animation = new LottieAnimation(json);
+    auto animation = new RLottieAnimation(json);
     return static_cast<jlong>(reinterpret_cast<intptr_t>(animation));
 }
 
@@ -18,7 +18,7 @@ static void renderFrame(JNIEnv* env, jobject obj, jlong ptr, jint frame, jobject
     void* pixels = nullptr;
     int ret = AndroidBitmap_lockPixels(env, bitmap, &pixels);
     if (ret >= 0) {
-        auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+        auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
         animation->render(static_cast<size_t>(frame), pixels);
         AndroidBitmap_unlockPixels(env, bitmap);
     }
@@ -28,7 +28,7 @@ static void destroyAnimation(JNIEnv* env, jobject obj, jlong ptr) {
     if (ptr == 0) {
         return;
     }
-    auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+    auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
     delete animation;
 }
 
@@ -36,7 +36,7 @@ static jint getWidth(JNIEnv* env, jobject obj, jlong ptr) {
     if (ptr == 0) {
         return 0;
     }
-    auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+    auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
     return animation->getWidth();
 }
 
@@ -44,7 +44,7 @@ static jint getHeight(JNIEnv* env, jobject obj, jlong ptr) {
     if (ptr == 0) {
         return 0;
     }
-    auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+    auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
     return animation->getHeight();
 }
 
@@ -52,7 +52,7 @@ static jint getFrameRate(JNIEnv* env, jobject obj, jlong ptr) {
     if (ptr == 0) {
         return 0;
     }
-    auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+    auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
     return animation->getFrameRate();
 }
 
@@ -60,7 +60,7 @@ static jint getFramesCount(JNIEnv* env, jobject obj, jlong ptr) {
     if (ptr == 0) {
         return 0;
     }
-    auto animation = reinterpret_cast<LottieAnimation*>(ptr);
+    auto animation = reinterpret_cast<RLottieAnimation*>(ptr);
     return animation->getFramesCount();
 }
 
@@ -82,7 +82,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
         return JNI_ERR;
     }
 
-    jclass c = env->FindClass("dev/glk/rlottieandroid/RLottieNative");
+    jclass c = env->FindClass("dev/glk/rlottieandroid/RLottie");
     if (c == nullptr) {
         return JNI_ERR;
     }
